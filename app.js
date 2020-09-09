@@ -29,24 +29,26 @@ function start() {
             name: "choice",
             message: "What would you like to do?",
             choices: [
-                "Add departments, roles, employees",
-                "View departments, roles, employees",
-                "Update employee roles"
+                "Add employee",
+                "View employees",
+                "Update employee role"
             ]
         }
     ]).then((res) => {
         switch (res.choice) {
-        case "Add departments, roles, employees":
+        case "Add employee":
             add();
             break;
         
-        case "View departments, roles, employees":
+        case "View employees":
             view();
             break;
         
-        case "Update employee roles":
+        case "Update employee role":
             update();
             break;
+        default:
+            console.log("error near switch");
         }
     });
 }
@@ -81,11 +83,27 @@ function add() {
     ]).then((res) => {
 
         var roleID;
-        (res.role === 'Sales Lead' || res.role === 'Salesperson') ? roleID = 1:
-        (res.role === 'Lead Engineer' || res.role === 'Software Engineer') ? roleID = 2:
-        (res.role === 'Account Manager' || res.role === 'Accountant') ? roleID = 3: roleID = 4;
+        (res.role === 'Sales Lead') ? roleID = 1:
+        (res.role === 'Salesperson') ? roleID = 2:
+        (res.role === 'Lead Engineer') ? roleID = 3:
+        (res.role === 'Software Engineer') ? roleID = 4:
+        (res.role === 'Account Manager') ? roleID = 5:
+        (res.role === 'Accountant') ? roleID = 6:
+        (res.role === 'Legal Team Lead') ? roleID = 7: 
+        roleID = 8;
+
+        let manager = '';
+        if (roleId == 1 || roleId == 3 || roleId == 5 || roleId == 7) manager = null;
+
+        var queryM = "SELECT * FROM employee";
+        connection.query(queryM, 
+            (err, res) => {
+                if (err) throw err;
+                (roleID === 2) ? manager = res. : null;
+            }
+        );
         
-        var query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('" + res.first_name + "', '" + res.last_name + "', " + roleID + ", " + 1 + ")";
+        var query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('" + res.first_name + "', '" + res.last_name + "', " + roleID + ", " + manager + ")";
         console.log(query);
         connection.query(query, 
             (err, res) => {
@@ -97,7 +115,7 @@ function add() {
 }
 
 function view() {
-    var query = "SELECT * FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department on employee.manager_id = department.id";
+    var query = "SELECT first_name, last_name, title, department_name, salary, manager_id FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department on role.departmentID = department.id";
     connection.query(query, 
         (err, res) => {
             if (err) throw err;
@@ -108,11 +126,55 @@ function view() {
 }
 
 function update() {
-    var query = "";
+    var query = "SELECT first_name, last_name, title, department_name FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department on role.departmentID = department.id";
     connection.query(query, 
         (err, res) => {
+            let names = res.map(e => e.first_name + " " + e.last_name);
             if (err) throw err;
-            start();
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    name: "employee",
+                    message: "Which employee would you like to update?",
+                    choices: names
+                },
+                {
+                    type: "list",
+                    name: "role",
+                    message: "What would you like to do?",
+                    choices: [
+                        'Sales Lead', 
+                        'Salesperson', 
+                        'Lead Engineer', 
+                        'Software Engineer', 
+                        'Account Manager', 
+                        'Accountant', 
+                        'Legal Team Lead',
+                        'Lawyer'
+                    ]
+                }
+            ]).then((res) => {
+                var roleID;
+                (res.role === 'Sales Lead') ? roleID = 1:
+                (res.role === 'Salesperson') ? roleID = 2:
+                (res.role === 'Lead Engineer') ? roleID = 3:
+                (res.role === 'Software Engineer') ? roleID = 4:
+                (res.role === 'Account Manager') ? roleID = 5:
+                (res.role === 'Accountant') ? roleID = 6:
+                (res.role === 'Legal Team Lead') ? roleID = 7: 
+                roleID = 8;
+                
+                let strArr = res.employee.split(" ");
+                
+                var query = "UPDATE employee SET role_id = '" + roleID + "' WHERE '" + strArr[0] + "' = first_name";
+                connection.query(query, 
+                    (err, res) => {
+                        if (err) throw err;
+                        console.log(res);
+                        start();
+                    }
+                );
+            });
         }
     );
 }
