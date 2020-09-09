@@ -92,16 +92,13 @@ function add() {
         (res.role === 'Legal Team Lead') ? roleID = 7: 
         roleID = 8;
 
-        let manager = '';
-        if (roleId == 1 || roleId == 3 || roleId == 5 || roleId == 7) manager = null;
+        let manager = 1;
+        (roleID === 2) ? manager = 1 :
+        (roleID === 4) ? manager = 3 :
+        (roleID === 6) ? manager = 5 :
+        (roleID === 8) ? manager = 7 : 1;
 
-        var queryM = "SELECT * FROM employee";
-        connection.query(queryM, 
-            (err, res) => {
-                if (err) throw err;
-                (roleID === 2) ? manager = res. : null;
-            }
-        );
+        
         
         var query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('" + res.first_name + "', '" + res.last_name + "', " + roleID + ", " + manager + ")";
         console.log(query);
@@ -115,7 +112,7 @@ function add() {
 }
 
 function view() {
-    var query = "SELECT first_name, last_name, title, department_name, salary, manager_id FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department on role.departmentID = department.id";
+    var query = "SELECT employee.id, first_name, last_name, title, department_name, salary, manager_id FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department on role.departmentID = department.id";
     connection.query(query, 
         (err, res) => {
             if (err) throw err;
@@ -123,6 +120,7 @@ function view() {
             start();
         }
     );
+    
 }
 
 function update() {
